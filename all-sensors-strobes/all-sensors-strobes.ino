@@ -41,11 +41,16 @@ void loop() {
       pixelColor[0] = colors[colorIndex][0];
       pixelColor[1] = colors[colorIndex][1];
       pixelColor[2] = colors[colorIndex][2];
-      ripple(NUMPIXELS);
+      drawReverseLine(0);
+      fadeOut(0);
+      drawLine(0);
+      fadeOut(0);
+      ripple(NUMPIXELS, 0);
+      fadeOut(0);
     }
 }
 //TOOD: Add a start length so that you can pick where it should start from
-void ripple(int striplength) {
+void ripple(int striplength, int delayBetweenLeds) {
   // get the center pixel. if ledstrip has even amount of leds, just take the two in the middle.
   int middleBack = floor(striplength / 2)-1; // we start at one
   int middleFront = floor(striplength / 2)+1;
@@ -54,7 +59,6 @@ void ripple(int striplength) {
     Serial.println(floor(striplength / 2));
     pixels.setPixelColor(floor(striplength / 2), pixels.Color(pixelColor[0], pixelColor[1], pixelColor[2]));
     pixels.show();
-    delay(25);
     pixels.clear();
   }
   // from center and forward
@@ -64,7 +68,7 @@ void ripple(int striplength) {
     // turn off the "previous led"
     pixels.setPixelColor(i+middleFront-1, pixels.Color(pixelColor[0] / 2, pixelColor[1]  / 2, pixelColor[2] / 2));
     pixels.setPixelColor(middleBack-i+1, pixels.Color(pixelColor[0] / 2, pixelColor[1]  / 2, pixelColor[2] / 2));
-    delay(25);
+    delay(delayBetweenLeds);
     pixels.show();
   }
 }
@@ -73,7 +77,15 @@ void drawLine(int fadeDelay) {
   for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
     pixels.setPixelColor(i, pixels.Color(pixelColor[0], pixelColor[1], pixelColor[2]));
     pixels.show();
-    delay(10);
+    delay(fadeDelay);
+  }
+}
+
+void drawReverseLine(int fadeDelay) {
+  for(int i=NUMPIXELS; i>0; i--) { // For each pixel...
+    pixels.setPixelColor(i, pixels.Color(pixelColor[0], pixelColor[1], pixelColor[2]));
+    pixels.show();
+    delay(fadeDelay);
   }
 }
 
