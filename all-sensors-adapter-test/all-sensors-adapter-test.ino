@@ -35,6 +35,8 @@ int colors[][3] = {
   {12, 151, 234},
 };
 void loop() {
+    pixels.clearPixels();
     pixels.setPixel(0, 255, 0, 0);
+    pixels.updatePixels();
     delay(1000);
 }
