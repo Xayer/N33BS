@@ -1,7 +1,12 @@
-#include "NeoPixelRgbAdapter.cpp"
+#ifndef RGB_STRIP_CONTROLLER_H_
+#define RGB_STRIP_CONTROLLER_H_
+
+#include "NeoPixelRgbAdapter.h"
+#include "rgbInterface.h"
 
 class RgbStripController {
     rgbInterface adapter;
+
     public:
         RgbStripController(int amountOfLeds, int pin = 3) {
             this->adapter = NeopixelAdapter(amountOfLeds, pin);
@@ -16,3 +21,5 @@ class RgbStripController {
             this->adapter.clearPixels();
         }
 };
+
+#endif
