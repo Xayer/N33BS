@@ -7,7 +7,7 @@
 
 class NeopixelAdapter: public rgbInterface {
 private:
-    Adafruit_NeoPixel neopixel;
+    Adafruit_NeoPixel* neopixel;
 public:
     NeopixelAdapter(int amountOfLeds, int pin = 3);
     void setPixel(int led, int red, int green, int blue) override;

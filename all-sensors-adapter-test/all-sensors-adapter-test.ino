@@ -15,7 +15,7 @@
 #define NUMPIXELS (SMALLSTRIP + LONGSTRIP * 3)
 #define arraySize(x)       (sizeof(x) / sizeof(x[0]))
 
-RgbStripController pixels = RgbStripController(NUMPIXELS, PIN);
+RgbStripController* pixels;
 
 /*****************************************************************************/
 /*SETUP (Initialisation)                                                          */
@@ -24,6 +24,9 @@ void setup()
 {
     /* Serial setup for UART debugging */
     Serial.begin(115200);
+
+    pixels = new RgbStripController(NUMPIXELS, PIN);
+    pixels->clearPixels();
 }
 
 /*****************************************************************************/
@@ -35,8 +38,7 @@ int colors[][3] = {
   {12, 151, 234},
 };
 void loop() {
-    pixels.clearPixels();
-    pixels.setPixel(0, 255, 0, 0);
-    pixels.updatePixels();
+    pixels->setPixel(0, 255, 0, 0);
+    pixels->updatePixels();
     delay(1000);
 }
