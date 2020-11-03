@@ -42,7 +42,7 @@
  */
 #define BLE_BUFFER_SIZES             20
 /* Device name which can be scene in BLE scanning software. */
-#define BLE_DEVICE_NAME                "Nano 33 BLE Sense"
+#define BLE_DEVICE_NAME                "Fake PoweredUp Hub"
 /* Local name which should pop up when scanning for BLE devices. */
 #define BLE_LOCAL_NAME                "HUB NO.4"
 
@@ -64,11 +64,12 @@ Nano33BLEProximityData proximityData;
  * application you might want to transfer ints directly.
  */
 BLEService BLESensors("00001623-1212-efde-1623-785feabcd123");
-BLECharacteristic wedoPortType("1624", BLERead | BLEWrite | BLENotify | BLEBroadcast, BLE_BUFFER_SIZES);
-BLECharacteristic wedoDistanceSensor("1560", BLERead | BLENotify | BLEBroadcast, BLE_BUFFER_SIZES);
+BLECharacteristic LegoServiceCharacteristic("00001624-1212-efde-1623-785feabcd123", BLERead | BLEWrite | BLENotify | BLEWriteWithoutResponse | BLEBroadcast, BLE_BUFFER_SIZES);
+BLECharacteristic wedoDistanceSensor("1560", BLERead | BLENotify | BLEWriteWithoutResponse | BLEBroadcast, BLE_BUFFER_SIZES);
 
 /* Common global buffer will be used to write to the BLE characteristics. */
 char bleBuffer[BLE_BUFFER_SIZES];
+byte connected = 0;
 /*****************************************************************************/
 /*SETUP (Initialisation)                                                     */
 /*****************************************************************************/
@@ -79,7 +80,6 @@ void setup()
      * plotter 
      */
     Serial.begin(115200);
-    while(!Serial);
 
 
     /* BLE Setup. For information, search for the many ArduinoBLE examples.*/
@@ -92,8 +92,8 @@ void setup()
         BLE.setDeviceName(BLE_DEVICE_NAME);
         BLE.setLocalName(BLE_LOCAL_NAME);
         BLE.setAdvertisedService(BLESensors);
-        BLESensors.addCharacteristic(wedoDistanceSensor);
-        BLESensors.addCharacteristic(wedoPortType);
+        //BLESensors.addCharacteristic(wedoDistanceSensor);
+        BLESensors.addCharacteristic(LegoServiceCharacteristic);
 
         BLE.addService(BLESensors);
         BLE.advertise();
@@ -124,23 +124,35 @@ void loop()
          * data will also be output through serial so it can be plotted using 
          * Serial Plotter. 
          */
-        while(central.connected())
+        if(central.connected())
         {    
+            if (!connected) {
+              //uint8_t portTypeBuffer[] = { 0x05, 0x00, 0x04, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+              //0x00, 0x00, 0x00, 0x00, 0x00 };
+              uint8_t portTypeBuffer[] = { 0x0F, 0x00, 0x04, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00, 0x00 };
+              // data with possibly engine running
+              // uint8_t portTypeBuffer[] = { 0x05, 0x00, 0x03, 0x03, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+              //0x00, 0x00, 0x00, 0x00, 0x00 };
+              LegoServiceCharacteristic.writeValue(portTypeBuffer, sizeof portTypeBuffer);
+              connected = 1;
+            }
+            else {
+              delay(1000);
+              connected = 0;
+            }
             /* 
              * sprintf is used to convert the read float value to a string 
              * which is stored in bleBuffer. This string is then written to 
              * the BLE characteristic. 
              */
-            uint8_t portTypeBuffer[] = { 0x0f, 0x00, 0x04, 0x01, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00 };
-            wedoPortType.writeValue(portTypeBuffer, sizeof portTypeBuffer);
-            if(Proximity.pop(proximityData))
-            {
-                writeLength = sprintf(bleBuffer, "%d", proximityData.proximity);
-                wedoDistanceSensor.writeValue(bleBuffer, writeLength); 
-                
-                Serial.printf("%d\r\n", proximityData.proximity);
-            }
+//            if(Proximity.pop(proximityData))
+//            {
+//                writeLength = sprintf(bleBuffer, "%d", proximityData.proximity);
+//                wedoDistanceSensor.writeValue(bleBuffer, writeLength); 
+//                
+//                Serial.printf("%d\r\n", proximityData.proximity);
+//            }
 
         }
     }
