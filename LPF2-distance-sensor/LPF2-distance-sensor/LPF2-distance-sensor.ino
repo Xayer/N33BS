@@ -70,6 +70,8 @@ BLECharacteristic wedoDistanceSensor("1560", BLERead | BLENotify | BLEWriteWitho
 /* Common global buffer will be used to write to the BLE characteristics. */
 char bleBuffer[BLE_BUFFER_SIZES];
 byte connected = 0;
+long long unsigned int portTypeBuffer[20] = { 0x0F, 0x00, 0x04, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00, 0x00 };
 /*****************************************************************************/
 /*SETUP (Initialisation)                                                     */
 /*****************************************************************************/
@@ -117,7 +119,6 @@ void loop()
     BLEDevice central = BLE.central();
     if(central)
     {
-        int writeLength;
         /* 
          * If a BLE device is connected, the data will start being read, 
          * and the data will be written to each BLE characteristic. The same 
@@ -129,7 +130,7 @@ void loop()
             if (!connected) {
               //uint8_t portTypeBuffer[] = { 0x05, 0x00, 0x04, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
               //0x00, 0x00, 0x00, 0x00, 0x00 };
-              uint8_t portTypeBuffer[] = { 0x0F, 0x00, 0x04, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                uint8_t portTypeBuffer[] = { 0x0F, 0x00, 0x04, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00, 0x00 };
               // data with possibly engine running
               // uint8_t portTypeBuffer[] = { 0x05, 0x00, 0x03, 0x03, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -137,10 +138,23 @@ void loop()
               LegoServiceCharacteristic.writeValue(portTypeBuffer, sizeof portTypeBuffer);
               connected = 1;
             }
-            else {
+            //if (LegoServiceCharacteristic.valueUpdated()) {
+              // watch if the characteristic has changed, if it has modify our local copy to compare with.
+              //Serial.println("value: \n");
+              //portTypeBuffer = LegoServiceCharacteristic.value();
+              uint8_t valueBuffer[20] = {};
+              LegoServiceCharacteristic.readValue(valueBuffer, 20);
+              int i=0;
+              
+              while (i < sizeof(valueBuffer))
+              {
+                   Serial.println(valueBuffer[i], HEX);
+                   i++;
+              }
+              Serial.println("\n-----\n");
               delay(1000);
-              connected = 0;
-            }
+            //}
+            
             /* 
              * sprintf is used to convert the read float value to a string 
              * which is stored in bleBuffer. This string is then written to 
