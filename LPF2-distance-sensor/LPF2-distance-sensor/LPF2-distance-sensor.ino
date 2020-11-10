@@ -156,7 +156,7 @@ void loop()
             if (currentValueBuffer[2] == 0x04) {
               Serial.println("--- I/O info requested ---");
               // we say that we have something in port A or 1
-              uint8_t attachedIoResponse[20] = { 0x00, 0x04, 0x00, 0x01, 0x02 };
+              uint8_t attachedIoResponse[20] = { 0x0, 0x00, 0x04, 0x00, 0x01, 0x02 };
               LegoServiceCharacteristic.writeValue(attachedIoResponse, sizeof attachedIoResponse);
             }
 
@@ -166,27 +166,26 @@ void loop()
               // Requesting for button press
               if (currentValueBuffer[3] == 2) {
                 Serial.println("--- button press requested ---");
-                uint8_t buttonPressResponse[20] = { 0x00, 0x01, 0x02, 0x02, 0x01 };
+                uint8_t buttonPressResponse[20] = { 0x01, 0x01, 0x02, 0x02, 0x01 };
                 LegoServiceCharacteristic.writeValue(buttonPressResponse, sizeof buttonPressResponse);
                 return;
               }
               else if (currentValueBuffer[3] == 3) {
                 Serial.println("--- firmware ---");
                 // requesting firmware version.
-                uint8_t firmwareResponse[20] = { 0x00, 0x01, 0x3, 0x24, 0x02, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00 };
+                uint8_t firmwareResponse[20] = { 0x00, 0x00, 0x01, 0x03, 0x06, 0x00, 0x00, 0x02, 0x17 };
                 LegoServiceCharacteristic.writeValue(firmwareResponse, sizeof firmwareResponse);
                 return;
               }
               // Battery Voltage
               else if (currentValueBuffer[3] == 0x06) {
                 Serial.println("--- Battery Voltage ---");
-                uint8_t batteryPercentage[20] = { 0x00, 0x01, 0x03, 0x05, 0x00, 0x64 };
+                uint8_t batteryPercentage[20] = { 0x01, 0x00, 0x01, 0x03, 0x05, 0x00, 0x64 };
                 LegoServiceCharacteristic.writeValue(batteryPercentage, sizeof batteryPercentage);
                 return;
               }
             }
-            // Do something with ports
+            /*// Do something with ports
             if (currentValueBuffer[2] == 0x81) {
               // all responses to 0x81 must be sent over 0x82
               if (currentValueBuffer[3] == 0x32) {
@@ -198,24 +197,24 @@ void loop()
                     char colors[10][10] = {"black", "pink", "blue", "lblue", "cyan", "green", "yellow", "orange", "red", "white" };
                     Serial.printf("SET RGB to color index (%s)", colors[colorIndex-1]);
                     // we must tell that we are busy before we can say that we are done
-                    uint8_t portInProgressResponse[20] = { 0x00, 0x82, 0x32, 0x01, 0x51, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00 };
+                    uint8_t portInProgressResponse[20] = { 0x00, 0x00, 0x82, 0x32, 0x01, 0x51, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00 };
                     LegoServiceCharacteristic.writeValue(portInProgressResponse, sizeof portInProgressResponse);
                     delay(500);
                     // tell that we are finished
-                    uint8_t colorUpdateCompleteResponse[20] = { 0x00, 0x82, 0x32, 0x01, 0x51, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00 };
+                    uint8_t colorUpdateCompleteResponse[20] = { 0x00, 0x00, 0x82, 0x32, 0x01, 0x51, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00 };
                     LegoServiceCharacteristic.writeValue(colorUpdateCompleteResponse, sizeof colorUpdateCompleteResponse);
                     delay(500);
                     // tell that we are idle
-                    uint8_t portIdleResponse[20] = { 0x00, 0x82, 0x32, 0x01, 0x51, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00 };
+                    uint8_t portIdleResponse[20] = { 0x00, 0x00, 0x82, 0x32, 0x01, 0x51, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00 };
                     LegoServiceCharacteristic.writeValue(portIdleResponse, sizeof portIdleResponse);
                     return;
                   }
                 }
               }
-            }
+            }*/
             // Fetch data again to see what changed:
             uint8_t modifiedData[20] = {};
             LegoServiceCharacteristic.readValue(modifiedData, 20);
@@ -248,3 +247,8 @@ void loop()
         }
     }
 }
+
+//void writeMessage(byte[] message, bool addLength = true) {
+//  int length = addLength ? sizeof message + 2 : sizeof message;
+//  LegoServiceCharacteristic.writeValue(message, length);
+//}
