@@ -25,7 +25,7 @@ void setup()
     /* Serial setup for UART debugging */
     Serial.begin(115200);
 
-    pixels = new RgbStripController(NUMPIXELS, PIN);
+    pixels = new RgbStripController(NUMPIXELS, PIN, 'o');
     pixels->clearPixels();
 }
 
