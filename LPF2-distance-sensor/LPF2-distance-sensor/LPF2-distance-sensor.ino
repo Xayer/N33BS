@@ -72,6 +72,7 @@ char bleBuffer[BLE_BUFFER_SIZES];
 byte connected = 0;
 int counter = 0;
 byte subscribed = 0;
+
 /*****************************************************************************/
 /*SETUP (Initialisation)                                                     */
 /*****************************************************************************/
@@ -94,10 +95,10 @@ void setup()
         BLE.setDeviceName(BLE_DEVICE_NAME);
         BLE.setLocalName(BLE_LOCAL_NAME);
         BLE.setAdvertisedService(BLESensors);
-        //BLESensors.addCharacteristic(wedoDistanceSensor);
         BLESensors.addCharacteristic(LegoServiceCharacteristic);
 
         BLE.addService(BLESensors);
+        BLE.setAdvertisingInterval(640);
         BLE.advertise();
         /* 
          * Initialises the proximity sensor, and starts the 
@@ -108,6 +109,7 @@ void setup()
 
         /* Plots the legend on Serial Plotter */
         Serial.println("Proximity\r\n");
+        
     }
 }
 
@@ -127,121 +129,13 @@ void loop()
          */
         while(central.connected())
         {
-            // initial Characteristic
+            if (LegoServiceCharacteristic.written()) {
+              Serial.println("value was updated!");
+            }
             if (!connected) {
-              uint8_t portTypeBuffer[20] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00 };
-              LegoServiceCharacteristic.writeValue(portTypeBuffer, sizeof portTypeBuffer);
+              LegoServiceCharacteristic.setEventHandler(BLEWritten, dataUpdated);
               connected = 1;
-              subscribed = LegoServiceCharacteristic.subscribe();
             }
-
-            LegoServiceCharacteristic.setEventHandler(BLEWritten, dataUpdated);
-
-            if (LegoServiceCharacteristic.valueUpdated()) {
-              Serial.println("value updated!");
-            }
-
-            // update Characteristic with the latest value
-            /*uint8_t currentValueBuffer[20] = {};
-            LegoServiceCharacteristic.readValue(currentValueBuffer, 20);
-            // Output the message before changing:
-            int i=0;
-
-            Serial.printf("Recieved State: %d", counter);
-            while (i < sizeof(currentValueBuffer))
-            {
-                 Serial.println(currentValueBuffer[i], HEX);
-                 i++;
-            }
-            Serial.println("-----");
-            counter++;
-
-            
-            // if requesting attached I/O (aka. Ports)
-            if (currentValueBuffer[2] == 0x04) {
-              Serial.println("--- I/O info requested ---");
-              // we say that we have something in port A or 1
-              uint8_t attachedIoResponse[16] = { 0x00, 0x00, 0x04, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00 };
-              LegoServiceCharacteristic.writeValue(attachedIoResponse, sizeof attachedIoResponse);
-              // 
-              uint8_t attachedPortResonse[15] = { 0x00, 0x00, 0x04, 59, 0x01, 21, 0x00, 0x02, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00 };
-              LegoServiceCharacteristic.writeValue(attachedPortResonse, sizeof attachedPortResonse);
-              //
-              uint8_t attachedPortSecondResonse[15] = { 0x00, 0x00, 0x04, 60, 0x01, 20, 0x00, 0x02, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00 };
-              LegoServiceCharacteristic.writeValue(attachedPortSecondResonse, sizeof attachedPortSecondResonse);
-            }
-
-            // Hub Properties
-            if (currentValueBuffer[2] == 1) {
-              Serial.println("--- Hub Props ---");
-              // Requesting for button press
-              if (currentValueBuffer[3] == 2) {
-                Serial.println("--- button press requested ---");
-                uint8_t buttonPressResponse[5] = { 0x01, 0x01, 0x02, 0x02, 0x01 };
-                LegoServiceCharacteristic.writeValue(buttonPressResponse, sizeof buttonPressResponse);
-                return;
-              }
-              if (currentValueBuffer[3] == 3) {
-                Serial.println("--- firmware ---");
-                // requesting firmware version.
-                uint8_t firmwareResponse[9] = { 0x00, 0x00, 0x01, 0x03, 0x06, 0x00, 0x00, 0x02, 0x17 };
-                LegoServiceCharacteristic.writeValue(firmwareResponse, sizeof firmwareResponse);
-                return;
-              }
-              
-              // Battery Voltage
-              else if (currentValueBuffer[3] == 0x06) {
-                Serial.println("--- Battery Voltage ---");
-                uint8_t batteryPercentage[6] = { 0x00, 0x00, 0x01, 0x06, 0x06, 0x32 };
-                LegoServiceCharacteristic.writeValue(batteryPercentage, sizeof batteryPercentage);
-                return;
-              }
-            }*/
-            // Do something with ports
-            /*if (currentValueBuffer[2] == 0x81) {
-              // all responses to 0x81 must be sent over 0x82
-              if (currentValueBuffer[3] == 0x32) {
-                if (currentValueBuffer[4] == 0x11) {
-                  Serial.println("---modify LED---");
-                  // https://lego.github.io/lego-ble-wireless-protocol-docs/index.html#output-sub-command-setrgbcolorno-colorno-n-a
-                  if (currentValueBuffer[5] == 0x51) {
-                    int colorIndex = (unsigned char)(currentValueBuffer[7]);
-                    char colors[10][10] = {"black", "pink", "blue", "lblue", "cyan", "green", "yellow", "orange", "red", "white" };
-                    Serial.printf("SET RGB to color index (%s)", colors[colorIndex-1]);
-                    // we must tell that we are busy before we can say that we are done
-                    uint8_t portInProgressResponse[20] = { 0x00, 0x00, 0x82, 0x32, 0x01, 0x51, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00 };
-                    LegoServiceCharacteristic.writeValue(portInProgressResponse, sizeof portInProgressResponse);
-                    delay(500);
-                    // tell that we are finished
-                    uint8_t colorUpdateCompleteResponse[20] = { 0x00, 0x00, 0x82, 0x32, 0x01, 0x51, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00 };
-                    LegoServiceCharacteristic.writeValue(colorUpdateCompleteResponse, sizeof colorUpdateCompleteResponse);
-                    delay(500);
-                    // tell that we are idle
-                    uint8_t portIdleResponse[20] = { 0x00, 0x00, 0x82, 0x32, 0x01, 0x51, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00 };
-                    LegoServiceCharacteristic.writeValue(portIdleResponse, sizeof portIdleResponse);
-                    return;
-                  }
-                }
-              }
-            }*/
-            // Fetch data again to see what changed:
-            /*uint8_t modifiedData[20] = {};
-            LegoServiceCharacteristic.readValue(modifiedData, 20);
-
-            int modifiedIndex=0;
-
-            Serial.printf("Modified State: %d", counter);
-            while (modifiedIndex < sizeof(modifiedData))
-            {
-                 Serial.println(modifiedData[modifiedIndex], HEX);
-                 modifiedIndex++;
-            }
-            Serial.println("-----");
-            counter++;*/
             
             /* 
              * sprintf is used to convert the read float value to a string 
@@ -266,15 +160,16 @@ void loop()
 //}
 
 void dataUpdated(BLEDevice central, BLECharacteristic characteristic) {
+  
   // central wrote new value to characteristic, update LED
-  Serial.print("Characteristic event, written: ");
+  //Serial.print("Characteristic event, written: ");
 
   uint8_t currentValueBuffer[LegoServiceCharacteristic.valueLength()] = {};
-  LegoServiceCharacteristic.readValue(currentValueBuffer, LegoServiceCharacteristic.valueLength());
+  LegoServiceCharacteristic.readValue(currentValueBuffer, sizeof currentValueBuffer);
   // Output the message before changing:
   int i=0;
 
-  Serial.printf("Recieved State: %d", counter);
+  Serial.printf("Recieved State with a size of %d: %d",sizeof currentValueBuffer, counter);
   while (i < sizeof(currentValueBuffer))
   {
        Serial.println(currentValueBuffer[i], HEX);
@@ -301,14 +196,14 @@ void dataUpdated(BLEDevice central, BLECharacteristic characteristic) {
     // Requesting for button press
     if (currentValueBuffer[3] == 2) {
       Serial.println("--- button press requested ---");
-      uint8_t buttonPressResponse[5] = { 0x05, 0x01, 0x02, 0x02, 0x01 };
+      uint8_t buttonPressResponse[6] = { 0x06, 0x01, 0x02, 0x02, 0x01 };
       LegoServiceCharacteristic.writeValue(buttonPressResponse, sizeof buttonPressResponse);
       return;
     }
     if (currentValueBuffer[3] == 3) {
       Serial.println("--- firmware ---");
       // requesting firmware version.
-      uint8_t firmwareResponse[9] = { 0x09, 0x00, 0x01, 0x03, 0x06, 0x00, 0x00, 0x02, 0x17 };
+      uint8_t firmwareResponse[9] = { 9, 0x01, 0x03, 0x06, 0x00, 0x00, 0x02, 0x11 };
       LegoServiceCharacteristic.writeValue(firmwareResponse, sizeof firmwareResponse);
       return;
     }
@@ -316,19 +211,19 @@ void dataUpdated(BLEDevice central, BLECharacteristic characteristic) {
     // Battery Voltage
     else if (currentValueBuffer[3] == 0x06) {
       Serial.println("--- Battery Voltage ---");
-      uint8_t batteryPercentage[6] = { 0x06, 0x00, 0x01, 0x06, 0x06, 0x32 };
+      uint8_t batteryPercentage[5] = { 0x00, 0x00, 0x01, 0x06, 0x06, 31 };
       LegoServiceCharacteristic.writeValue(batteryPercentage, sizeof batteryPercentage);
       return;
     }
   }
 
-  if (currentValueBuffer[2] == 0x81) {
+  /*if (currentValueBuffer[2] == 0x51) {
     // all responses to 0x81 must be sent over 0x82
-    if (currentValueBuffer[3] == 0x32) {
+    if (currentValueBuffer[3] == 0x20) {
       if (currentValueBuffer[4] == 0x11) {
         Serial.println("---modify LED---");
         // https://lego.github.io/lego-ble-wireless-protocol-docs/index.html#output-sub-command-setrgbcolorno-colorno-n-a
-        if (currentValueBuffer[5] == 0x51) {
+        if (currentValueBuffer[5] == 0x34) {
           int colorIndex = (unsigned char)(currentValueBuffer[7]);
           char colors[10][10] = {"black", "pink", "blue", "lblue", "cyan", "green", "yellow", "orange", "red", "white" };
           Serial.printf("SET RGB to color index (%s)", colors[colorIndex-1]);
@@ -350,5 +245,5 @@ void dataUpdated(BLEDevice central, BLECharacteristic characteristic) {
         }
       }
     }
-  }
+  }*/
 }
