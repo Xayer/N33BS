@@ -6,8 +6,8 @@
 #include "rgbInterface.h"
 
 class RgbStripController {
-private:
-    rgbInterface* adapter;
+    private:
+        rgbInterface* adapter;
 
 public:
     RgbStripController(int amountOfLeds, int pin = 3, char type = 'n') {
