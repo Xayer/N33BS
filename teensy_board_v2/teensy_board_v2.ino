@@ -47,10 +47,10 @@ FASTLED_USING_NAMESPACE
 #define BULB        8
 CRGB leds[NUM_LEDS];
 
-CRGB X1_LEDS[BULB];
-CRGB X2_LEDS[BULB];
-CRGB X3_LEDS[BULB];
-CRGB X4_LEDS[BULB];
+CRGB X1_LEDS[NUM_LEDS];
+CRGB X2_LEDS[NUM_LEDS];
+CRGB X3_LEDS[NUM_LEDS];
+CRGB X4_LEDS[NUM_LEDS];
 
 #define BRIGHTNESS          96
 #define FRAMES_PER_SECOND  240
@@ -81,10 +81,10 @@ void setup() {
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE, PIN_LED_DATA, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   fadeToBlackBy( leds, NUM_LEDS, 2000);
-  //FastLED.addLeds<LED_TYPE, X1_OUT, COLOR_ORDER>(X1_LEDS, BULB).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<LED_TYPE, X2_OUT, COLOR_ORDER>(X2_LEDS, BULB).setCorrection(TypicalLEDStrip);
-  //FastLED.addLeds<LED_TYPE, X3_OUT, COLOR_ORDER>(X3_LEDS, BULB).setCorrection(TypicalLEDStrip);
-  //FastLED.addLeds<LED_TYPE, X4_OUT, COLOR_ORDER>(X4_LEDS, BULB).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, X1_OUT, COLOR_ORDER>(X1_LEDS, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, X2_OUT, COLOR_ORDER>(X2_LEDS, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, X3_OUT, COLOR_ORDER>(X3_LEDS, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, X4_OUT, COLOR_ORDER>(X4_LEDS, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
@@ -103,16 +103,28 @@ String readString;
 
 void loop()
 {
+  gHue += 1;
+
+  if(gHue == 360) {
+    gHue = 0;
+  }
   // Call the current pattern function once, updating the 'leds' array
-  //sinelon();
-  confetti();
-  sinelonBulb();
+  //sinelon(leds);
+  //confetti();
+  //sinelonBulb();
   //sinelonX1();
+  drawLine(15, X2_LEDS);
+  drawLine(75, X1_LEDS);
+  sinelon(X3_LEDS);
+  sinelon(X4_LEDS);
+  //addGlitter(10, X2_LEDS);
 
   // send the 'leds' array out to the actual LED strip
   FastLED.show();
   // insert a delay to keep the framerate modest
   FastLED.delay(1000/FRAMES_PER_SECOND);
+
+  
 
   // do some periodic updates
   // EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
@@ -131,43 +143,27 @@ void loop()
   }*/
 }
 
-void addGlitter( fract8 chanceOfGlitter)
+void addGlitter( fract8 chanceOfGlitter, CRGB* ledArray)
 {
   if ( random8() < chanceOfGlitter) {
-    leds[ random16(NUM_LEDS) ] += CRGB::White;
+    ledArray[ random16(NUM_LEDS) ] += CRGB::White;
   }
 }
 
-void confetti()
+void confetti(CRGB* ledArray)
 {
   // random colored speckles that blink in and fade smoothly
-  fadeToBlackBy( leds, NUM_LEDS, 10);
+  fadeToBlackBy( ledArray, NUM_LEDS, 10);
   int pos = random16(NUM_LEDS);
-  leds[pos] += CHSV( gHue + random8(128), 200, 255);
+  ledArray[pos] += CHSV( gHue + random8(128), 200, 255);
 }
 
-void sinelon()
+void sinelon(CRGB* ledArray)
 {
   // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy( leds, BULB, 20);
-  int pos = beatsin16( 13, 0, NUM_LEDS - 1 );
-  leds[pos] += CHSV( gHue, 255, 192);
-}
-
-void sinelonX1()
-{
-  // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy( X1_LEDS, BULB, 20);
-  int pos = beatsin16( 13, 0, BULB - 1 );
-  X1_LEDS[pos] += CHSV( gHue * 0.5, 255, 192);
-}
-
-void sinelonBulb()
-{
-  // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy( X2_LEDS, BULB, 250);
-  int pos = beatsin16( 13, 0, BULB - 1 );
-  X2_LEDS[pos] += CHSV( gHue, 255, 192);
+  fadeToBlackBy( ledArray, NUM_LEDS, 20);
+  int pos = beatsin16( 250, 0, NUM_LEDS - 1 );
+  ledArray[pos] += CHSV( gHue, 255, 192);
 }
 
 void toggleItem(int port) {
@@ -178,4 +174,12 @@ void toggleItem(int port) {
   int newValue = portValue ? LOW : HIGH;
   Serial.printf("\nnew value: %d\n", newValue);
   digitalWrite(port, newValue);
+}
+
+void drawLine(int fadeDelay, CRGB* ledArray) {
+  for(int i=0; i<NUM_LEDS; i++) { // For each pixel...
+    ledArray[i] = CHSV( gHue, 255, 192);
+    //FastLED.show();
+    //FastLED.delay(fadeDelay);
+  }
 }
