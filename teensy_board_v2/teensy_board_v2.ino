@@ -43,9 +43,10 @@ FASTLED_USING_NAMESPACE
 
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
-#define NUM_LEDS    BULB
+#define NUM_LEDS    (STRIP * 3) + SMALLSTRIP
 #define BULB        8
 #define STRIP       19
+#define SMALLSTRIP  10
 CRGB leds[NUM_LEDS];
 
 CRGB X1_LEDS[NUM_LEDS];
@@ -54,7 +55,7 @@ CRGB X3_LEDS[NUM_LEDS];
 CRGB X4_LEDS[NUM_LEDS];
 
 #define BRIGHTNESS          96
-#define FRAMES_PER_SECOND  240
+#define FRAMES_PER_SECOND  1
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 #define shouldCycleColors false

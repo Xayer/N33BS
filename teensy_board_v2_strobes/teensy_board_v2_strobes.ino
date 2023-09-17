@@ -43,9 +43,10 @@ FASTLED_USING_NAMESPACE
 
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
-#define NUM_LEDS    BULB
+#define NUM_LEDS    (STRIP * 3) + SMALL_STRIP
 #define BULB        8
 #define STRIP       19
+#define SMALL_STRIP 10
 CRGB leds[NUM_LEDS];
 
 CRGB X1_LEDS[NUM_LEDS];
@@ -113,15 +114,14 @@ void loop()
     }
   }
   // Call the current pattern function once, updating the 'leds' array
-  //sinelon(leds);
-  //confetti();
-  //sinelonBulb();
-  //sinelonX1();
+  sinelon(leds);
+  confetti(leds);
+  // sinelonBulb(leds);
   drawLine(75, leds);
   drawLine(75, X1_LEDS);
-  drawLine(75, X2_LEDS);
-  drawLine(75, X3_LEDS);
-  drawLine(75, X4_LEDS);
+  // drawLine(75, X2_LEDS);
+  // drawLine(75, X3_LEDS);
+  // drawLine(75, X4_LEDS);
 
   FastLED.show();
 
@@ -138,10 +138,10 @@ void loop()
   FastLED.delay(25);
 
   drawLine(75, leds);
-  drawLine(75, X1_LEDS);
-  drawLine(75, X2_LEDS);
-  drawLine(75, X3_LEDS);
-  drawLine(75, X4_LEDS);
+  // drawLine(75, X1_LEDS);
+  // drawLine(75, X2_LEDS);
+  // drawLine(75, X3_LEDS);
+  // drawLine(75, X4_LEDS);
 
   FastLED.show();
 
@@ -157,12 +157,11 @@ void loop()
 
   FastLED.delay(250);
   
-//  drawLine(75, leds);
-//  drawLine(10, X1_LEDS);
+ drawLine(75, leds);
+ drawLine(10, X1_LEDS);
 //  sinelon(X1_LEDS);
-//  confetti(X1_LEDS);
-//  addGlitter(4, X2_LEDS);
-//  confetti(X2_LEDS);
+  addGlitter(4, leds);
+  confetti(X1_LEDS);
 //  drawLine(75, X3_LEDS);
 //  confetti(X3_LEDS);
 //  drawLine(75, X4_LEDS);
@@ -228,7 +227,7 @@ void toggleItem(int port) {
 void drawLine(int fadeDelay, CRGB* ledArray) {
   for(int i=0; i<NUM_LEDS; i++) { // For each pixel...
     ledArray[i] = CHSV( gHue, 0, 255);
-    // FastLED.show();
-    // FastLED.delay(fadeDelay);
+    FastLED.show();
+    FastLED.delay(fadeDelay);
   }
 }

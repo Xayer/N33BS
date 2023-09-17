@@ -13,7 +13,7 @@
 #define SMALLSTRIP 10
 #define LONGSTRIP 19
 #define BULB 8
-#define NUMPIXELS BULB
+#define NUMPIXELS (LONGSTRIP * 5) + SMALLSTRIP
 #define arraySize(x)       (sizeof(x) / sizeof(x[0]))
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
@@ -42,11 +42,11 @@ void loop() {
       pixelColor[0] = colors[colorIndex][0];
       pixelColor[1] = colors[colorIndex][1];
       pixelColor[2] = colors[colorIndex][2];
-      //drawReverseLine(5);
-      fadeIn(25);
-      //drawLine(75);
-      //fadeOut(5);
-      //ripple(NUMPIXELS, 100);
+      drawReverseLine(5);
+      //fadeIn(25);
+      drawLine(75);
+      fadeOut(5);
+      ripple(NUMPIXELS, 100);
       fadeOut(20);
     }
 }

@@ -3,8 +3,8 @@
 // How many leds in your strip?
 #define SMALLSTRIP 10
 #define LONGSTRIP 19
-// #define NUM_LEDS (LONGSTRIP * 4)
-#define NUM_LEDS 8
+#define NUM_LEDS (LONGSTRIP * 5) + (SMALLSTRIP * 2)
+// #define NUM_LEDS 8
 
 // For led chips like Neopixels, which have a data line, ground, and power, you just
 // need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
