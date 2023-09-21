@@ -21,7 +21,7 @@
 #define FRAMES_PER_SECOND  240
 #define HUE 60
 CRGB leds[NUM_LEDS];
-#define PIN_LED_DATA 23
+#define PIN_LED_DATA 13
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
 
@@ -49,14 +49,14 @@ void set_LEDON ( void ) {
    isBlinking = false;
    ledStatus  = LED_ON;
    digitalWrite ( LED_BUILTIN, LED_ON );
-   drawLine(75, leds);
+  //  drawLine(75, leds);
    sendOK();
 }
 
 void set_LEDOF ( void ) {
    isBlinking = false;
    ledStatus  = LED_OFF;
-   fadeToBlackBy( leds, NUM_LEDS, 10);
+  //  fadeToBlackBy( leds, NUM_LEDS, 10);
    digitalWrite ( LED_BUILTIN, LED_OFF );
    sendOK();
 }
@@ -145,7 +145,7 @@ void setup() {
 #endif
 
    // init fastled
-  FastLED.addLeds<LED_TYPE, PIN_LED_DATA, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  // FastLED.addLeds<LED_TYPE, PIN_LED_DATA, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 }
 
 // ----------------------- loop() ------------------------
