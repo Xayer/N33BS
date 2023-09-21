@@ -146,6 +146,10 @@ void setupWheels() {
 	TCCR1B=TCCR1B&0xf8|0x01;    // Pin9,Pin10 PWM 31250Hz
 	TCCR2B=TCCR2B&0xf8|0x01;    // Pin3,Pin11 PWM 31250Hz
   getOmni().PIDEnable(0.31,0.01,0,10);
+
+  // TODO: make some error handling to make
+  // sure that we have initialized all 4 wheels.
+  // if they are not all connected it will cause the entire program to fail
 }
 
 void setupSerial() {
@@ -237,5 +241,5 @@ void setup() {
 void loop() {
 	serialLoop();
 
-  getOmni().demoActions(200,5000,500,false);
+  // getOmni().demoActions(200,5000,500,false);
 }
