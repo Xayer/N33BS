@@ -43,10 +43,9 @@ FASTLED_USING_NAMESPACE
 
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
-#define NUM_LEDS    (STRIP * 3) + SMALLSTRIP
+#define NUM_LEDS    BULB
 #define BULB        8
 #define STRIP       19
-#define SMALLSTRIP  10
 CRGB leds[NUM_LEDS];
 
 CRGB X1_LEDS[NUM_LEDS];
@@ -55,7 +54,7 @@ CRGB X3_LEDS[NUM_LEDS];
 CRGB X4_LEDS[NUM_LEDS];
 
 #define BRIGHTNESS          96
-#define FRAMES_PER_SECOND  1
+#define FRAMES_PER_SECOND  160
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 #define shouldCycleColors false
@@ -83,7 +82,7 @@ void setup() {
   delay(2000);
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE, PIN_LED_DATA, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  fadeToBlackBy( leds, NUM_LEDS, 2000);
+  fadeToBlackBy( leds, NUM_LEDS, 0);
   FastLED.addLeds<LED_TYPE, X1_OUT, COLOR_ORDER>(X1_LEDS, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<LED_TYPE, X2_OUT, COLOR_ORDER>(X2_LEDS, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<LED_TYPE, X3_OUT, COLOR_ORDER>(X3_LEDS, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -99,6 +98,12 @@ void setup() {
     Serial.printf("Port: %d\n", ports[portIndex]);
   }*/
 }
+
+// List of patterns to cycle through.  Each is defined as a separate function below.
+typedef void (*SimplePatternList[])();
+SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm, drawLine };
+
+uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 53; // rotating "base color" used by many of the patterns
 
 uint8_t lastChangedPort = -1;
@@ -113,66 +118,18 @@ void loop()
       gHue = 0;
     }
   }
-  // Call the current pattern function once, updating the 'leds' array
-  //sinelon(leds);
-  //confetti();
-  //sinelonBulb();
-  //sinelonX1();
-  drawLine(75, leds);
-  drawLine(75, X1_LEDS);
-  drawLine(75, X2_LEDS);
-  drawLine(75, X3_LEDS);
-  drawLine(75, X4_LEDS);
 
-  FastLED.show();
+  gPatterns[gCurrentPatternNumber]();
 
-  FastLED.delay(75);
+  if(Serial.available() > 0) {
+    while(Serial.available() > 0) {
+      changeEffect();
+    }
+  }
 
-  fill_solid ( leds, NUM_LEDS, CRGB::Black);
-  fill_solid ( X1_LEDS, NUM_LEDS, CRGB::Black);
-  fill_solid ( X2_LEDS, NUM_LEDS, CRGB::Black);
-  fill_solid ( X3_LEDS, NUM_LEDS, CRGB::Black);
-  fill_solid ( X4_LEDS, NUM_LEDS, CRGB::Black);
-
-  FastLED.show();
-
-  FastLED.delay(25);
-
-  drawLine(75, leds);
-  drawLine(75, X1_LEDS);
-  drawLine(75, X2_LEDS);
-  drawLine(75, X3_LEDS);
-  drawLine(75, X4_LEDS);
-
-  FastLED.show();
-
-  FastLED.delay(75);
-
-  fill_solid ( leds, NUM_LEDS, CRGB::Black);
-  fill_solid ( X1_LEDS, NUM_LEDS, CRGB::Black);
-  fill_solid ( X2_LEDS, NUM_LEDS, CRGB::Black);
-  fill_solid ( X3_LEDS, NUM_LEDS, CRGB::Black);
-  fill_solid ( X4_LEDS, NUM_LEDS, CRGB::Black);
-
-  FastLED.show();
-
-  FastLED.delay(250);
-  
-//  drawLine(75, leds);
-//  drawLine(10, X1_LEDS);
-//  sinelon(X1_LEDS);
-//  confetti(X1_LEDS);
-//  addGlitter(4, X2_LEDS);
-//  confetti(X2_LEDS);
-//  drawLine(75, X3_LEDS);
-//  confetti(X3_LEDS);
-//  drawLine(75, X4_LEDS);
-  //addGlitter(10, X2_LEDS);
-
-  // send the 'leds' array out to the actual LED strip
-  FastLED.show();
+  FastLED.show();  
   // insert a delay to keep the framerate modest
-  FastLED.delay(1000/FRAMES_PER_SECOND);
+  FastLED.delay(1000/FRAMES_PER_SECOND); 
 
   
 
@@ -193,27 +150,69 @@ void loop()
   }*/
 }
 
-void addGlitter( fract8 chanceOfGlitter, CRGB* ledArray)
-{
-  if ( random8() < chanceOfGlitter) {
-    ledArray[ random16(NUM_LEDS) ] += CRGB::White;
+void changeEffect() {
+  int dataIn = Serial.parseInt();
+
+  Serial.println(dataIn);
+
+  if (dataIn > 0) {
+
+    switch(dataIn){
+      case 1:
+        Serial.println("rainbow");
+        gCurrentPatternNumber = 0;
+        break;
+      case 2:
+        Serial.println("rainbowWithGlitter");
+        gCurrentPatternNumber = 1;
+        break;
+      case 3:
+        Serial.println("confetti");
+        gCurrentPatternNumber = 2;
+        break;
+      case 4:
+        Serial.println("sinelon");
+        gCurrentPatternNumber = 3;
+        break;
+      case 5:
+        Serial.println("juggle");
+        gCurrentPatternNumber = 4;
+        break;
+      case 6:
+        Serial.println("bpm");
+        gCurrentPatternNumber = 5;
+        break;
+      case 7:
+        Serial.println("drawLine");
+        gCurrentPatternNumber = 6;
+        break;
+      default:
+        FastLED.setBrightness(dataIn);
+    }
   }
 }
 
-void confetti(CRGB* ledArray)
+void addGlitter( fract8 chanceOfGlitter)
 {
-  // random colored speckles that blink in and fade smoothly
-  fadeToBlackBy( ledArray, NUM_LEDS, 10);
-  int pos = random16(NUM_LEDS);
-  ledArray[pos] += CHSV( gHue + random8(128), 200, 255);
+  if ( random8() < chanceOfGlitter) {
+    leds[ random16(NUM_LEDS) ] += CRGB::White;
+  }
 }
 
-void sinelon(CRGB* ledArray)
+void confetti()
+{
+  // random colored speckles that blink in and fade smoothly
+  fadeToBlackBy( leds, NUM_LEDS, 10);
+  int pos = random16(NUM_LEDS);
+  leds[pos] += CHSV( gHue + random8(128), 200, 255);
+}
+
+void sinelon()
 {
   // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy( ledArray, NUM_LEDS, 20);
+  fadeToBlackBy( leds, NUM_LEDS, 20);
   int pos = beatsin16( 250, 0, NUM_LEDS - 1 );
-  ledArray[pos] += CHSV( gHue, 255, 192);
+  leds[pos] += CHSV( gHue, 255, 192);
 }
 
 void toggleItem(int port) {
@@ -226,10 +225,45 @@ void toggleItem(int port) {
   digitalWrite(port, newValue);
 }
 
-void drawLine(int fadeDelay, CRGB* ledArray) {
+void drawLine() {
   for(int i=0; i<NUM_LEDS; i++) { // For each pixel...
-    ledArray[i] = CHSV( gHue, 0, 255);
+    leds[i] = CHSV( gHue, 0, 255);
+    FastLED.show();
+    FastLED.delay(75);
     // FastLED.show();
-    // FastLED.delay(fadeDelay);
+  }
+}
+
+void rainbow() 
+{
+  // FastLED's built-in rainbow generator
+  fill_rainbow( leds, NUM_LEDS, gHue, 7);
+}
+
+void rainbowWithGlitter() 
+{
+  // built-in FastLED rainbow, plus some random sparkly glitter
+  rainbow();
+  addGlitter(80);
+}
+
+void bpm()
+{
+  // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+  uint8_t BeatsPerMinute = 62;
+  CRGBPalette16 palette = PartyColors_p;
+  uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
+  for( int i = 0; i < NUM_LEDS; i++) { //9948
+    leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+  }
+}
+
+void juggle() {
+  // eight colored dots, weaving in and out of sync with each other
+  fadeToBlackBy( leds, NUM_LEDS, 20);
+  byte dothue = 0;
+  for( int i = 0; i < 8; i++) {
+    leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
+    dothue += 32;
   }
 }

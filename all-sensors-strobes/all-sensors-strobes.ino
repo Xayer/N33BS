@@ -9,10 +9,11 @@
 /*****************************************************************************/
 /*Constants                                                                  */
 /*****************************************************************************/
-#define PIN 3
+#define PIN 23
 #define SMALLSTRIP 10
 #define LONGSTRIP 19
-#define NUMPIXELS (SMALLSTRIP + LONGSTRIP * 3)
+#define BULB 8
+#define NUMPIXELS (LONGSTRIP * 5) + SMALLSTRIP
 #define arraySize(x)       (sizeof(x) / sizeof(x[0]))
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
@@ -41,12 +42,12 @@ void loop() {
       pixelColor[0] = colors[colorIndex][0];
       pixelColor[1] = colors[colorIndex][1];
       pixelColor[2] = colors[colorIndex][2];
-      drawReverseLine(0);
-      fadeOut(0);
-      drawLine(0);
-      fadeOut(0);
-      ripple(NUMPIXELS, 0);
-      fadeOut(0);
+      drawReverseLine(5);
+      //fadeIn(25);
+      drawLine(75);
+      fadeOut(5);
+      ripple(NUMPIXELS, 100);
+      fadeOut(20);
     }
 }
 //TOOD: Add a start length so that you can pick where it should start from
